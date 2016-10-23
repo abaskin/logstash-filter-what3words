@@ -1,27 +1,18 @@
 # encoding: utf-8
 require "logstash/filters/base"
 require "logstash/namespace"
+require "what3words"
 
-# This example filter will replace the contents of the default
-# message field with whatever you specify in the configuration.
-#
-# It is only intended to be used as an example.
-class LogStash::Filters::Example < LogStash::Filters::Base
+class LogStash::Filters::What3Words < LogStash::Filters::Base
 
-  # Setting the config_name here is required. This is how you
-  # configure this filter from your Logstash config.
-  #
-  # filter {
-  #   example {
-  #     message => "My message..."
-  #   }
-  # }
-  #
-  config_name "example"
+  config_name "what3words"
 
-  # Replace the message with this value.
-  config :message, :validate => :string, :default => "Hello World!"
-
+  config :api_key, :validate => :password, :required => true
+  config :lang, :validate => :string, :default => "en"
+  config :format, :validate => :string, :default => "full"
+  config :display, :validate => :string, :default => "json"
+  config :source, :validate => :string, :default => "message"
+  config :target, :validate => :string, :default => "what3words"
 
   public
   def register
@@ -31,18 +22,26 @@ class LogStash::Filters::Example < LogStash::Filters::Base
   public
   def filter(event)
 
-    if @message
-      # Replace the event message with our message as configured in the
-      # config file.
+    return unless event.include?(@source)
 
-      # using the event.set API
-      event.set("message", @message)
-      # correct debugging log statement for reference
-      # using the event.get API
-      @logger.debug? && @logger.debug("Message is now: #{event.get("message")}")
+    forward_re = /^(http:\/\/w3w.co\/)?([a-z]+\.[a-z]+\.[a-z]+)$/
+    reverse_re = /^(\d+\.\d+)\s+(\d+\.\d+)$/
+
+    what3words = What3Words::API.new(:key => @api_key)
+
+    m = forward_re.match(event.get(@fsource))
+    if m
+      result = what3words.forward m[2], :lang => @lang, :format => @format, :display => @display
     end
 
-    # filter_matched should go in the last line of our successful code
-    filter_matched(event)
+    m = reverse_re.match(event.get(@fsource))
+    if m
+      result = what3words.reverse [m[1],m[2]], :lang => @lang, :format => @format, :display => @display
+    end
+
+    unless (result).nil?
+      event.set(@target,result)
+      filter_matched(event)
+    end
   end # def filter
 end # class LogStash::Filters::Example
