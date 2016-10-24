@@ -53,7 +53,7 @@ class LogStash::Filters::What3Words < LogStash::Filters::Base
     end
 
     if (result).nil?
-      @logger.warn("Not a valid 3 word address", address: => event.get(@source))
+      @logger.warn("Not a valid 3 word address", :address => event.get(@source))
       @tag_on_failure.each {|tag| event.tag(tag)}
     elsif results[:properties][:status].has_key?(:code)
       @logger.warn("What3Words returned an error code", :code => geojson[:properties][:status][:code], :error => geojson[:properties][:status][:message])
