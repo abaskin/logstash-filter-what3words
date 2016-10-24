@@ -1,20 +1,20 @@
 # encoding: utf-8
 require 'spec_helper'
-require "logstash/filters/example"
+require "logstash/filters/what3words"
 
-describe LogStash::Filters::Example do
-  describe "Set to Hello World" do
+describe LogStash::Filters::What3Words do
+  describe "Forward index.home.raft" do
     let(:config) do <<-CONFIG
       filter {
-        example {
-          message => "Hello World"
+        what3words {
+          api_key => "3ZRSISHE"
         }
       }
     CONFIG
     end
 
-    sample("message" => "some text") do
-      expect(subject.get("message")).to eq('Hello World')
+    sample("message" => "index.home.raft") do
+      expect(subject.get("[properties][status][status]")).to eq(200)
     end
   end
 end
