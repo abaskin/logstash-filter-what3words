@@ -2,6 +2,7 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 require "what3words"
+require "json"
 
 class LogStash::Filters::What3Words < LogStash::Filters::Base
 
@@ -26,7 +27,7 @@ class LogStash::Filters::What3Words < LogStash::Filters::Base
     return unless event.include?(@source)
 
     forward_re = /^(http:\/\/w3w.co\/)?([a-z]+\.[a-z]+\.[a-z]+)$/
-    reverse_re = /^(\d+\.\d+)\s+(\d+\.\d+)$/
+    reverse_re = /^([\-\d]+\.\d+)[\s\,]+([\-\d]+\.\d+)$/
 
     what3words = What3Words::API.new(:key => @api_key)
 
@@ -55,11 +56,11 @@ class LogStash::Filters::What3Words < LogStash::Filters::Base
     if (result).nil?
       @logger.warn("Not a valid 3 word address", :address => event.get(@source))
       @tag_on_failure.each {|tag| event.tag(tag)}
-    elsif results[:properties][:status].has_key?(:code)
+    elsif result[:properties][:status].has_key?(:code)
       @logger.warn("What3Words returned an error code", :code => geojson[:properties][:status][:code], :error => geojson[:properties][:status][:message])
       @tag_on_failure.each {|tag| event.tag(tag)}
     else
-      event.set(@target,result)
+      event.set(@target,JSON.parse(JSON.generate(result)))
       filter_matched(event)
     end
   end # def filter
