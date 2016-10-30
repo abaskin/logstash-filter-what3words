@@ -3,7 +3,7 @@ require 'spec_helper'
 require "logstash/filters/what3words"
 
 describe LogStash::Filters::What3Words do
-  describe "Lookup index.home.raft" do
+  describe "Forward and reverse for index.home.raft" do
     let(:config) do <<-CONFIG
       filter {
         what3words {
@@ -17,11 +17,11 @@ describe LogStash::Filters::What3Words do
     end
 
     sample("message" => "index.home.raft") do
-      expect(subject.get("[what3words][words]")).to eq("index.home.raft")
+      insist { subject.get("[what3words][words]") } == "index.home.raft"
     end
 
     sample("message" => "51.521251, -0.203586") do
-      expect(subject.get("[what3words][[words]")).to eq("index.home.raft")
+      insist { subject.get("[what3words][words]") } == "index.home.raft"
     end
   end
 end

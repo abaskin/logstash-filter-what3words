@@ -17,21 +17,18 @@ class LogStash::Filters::What3Words < LogStash::Filters::Base
 
   public
   def register
-    # Add instance variables
+    @forward_re = /^(http:\/\/w3w.co\/)?([a-z]+\.[a-z]+\.[a-z]+)$/
+    @reverse_re = /^([\-\d]+\.\d+)[\s\,]+([\-\d]+\.\d+)$/
   end # def register
 
   public
   def filter(event)
-
     return unless event.include?(@source)
-
-    forward_re = /^(http:\/\/w3w.co\/)?([a-z]+\.[a-z]+\.[a-z]+)$/
-    reverse_re = /^([\-\d]+\.\d+)[\s\,]+([\-\d]+\.\d+)$/
 
     what3words = What3Words::API.new(:key => @api_key)
 
-    forw = forward_re.match(event.get(@source))
-    rev = reverse_re.match(event.get(@source))
+    forw = @forward_re.match(event.get(@source))
+    rev = @reverse_re.match(event.get(@source))
 
     begin
       result = what3words.forward forw[2], :lang => @lang, :format => @format, :display => @display if forw
