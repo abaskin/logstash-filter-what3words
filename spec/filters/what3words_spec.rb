@@ -7,7 +7,7 @@ describe LogStash::Filters::What3Words do
     let(:config) do <<-CONFIG
       filter {
         what3words {
-          api_key => "3ZRSISHE"
+          api_key => ENV["W3W_API_KEY"]
           # display => "full"
           # format => "json"
           # lang => "en"

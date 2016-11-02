@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   # Gem dependencies
   s.add_runtime_dependency "logstash-core-plugin-api", ">= 1.60", "< 3.0.0"
   s.add_runtime_dependency "what3words", "~> 2.0", ">= 2.0.3"
-  s.add_development_dependency "logstash-devutils", ">= 0.0.16"
+  s.add_development_dependency "logstash-devutils", "~> 0.0", ">= 0.0.16"
 end

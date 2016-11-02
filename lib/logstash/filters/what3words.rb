@@ -3,16 +3,95 @@ require "logstash/filters/base"
 require "logstash/namespace"
 require "what3words"
 
+# The what3words filter allows you to look up geodata using the What3Words
+# API. The input is either a 3 word address as a string or geo corrdinates.
 class LogStash::Filters::What3Words < LogStash::Filters::Base
 
   config_name "what3words"
 
+  # Supply the What3Words API key.
+  # Keys can be obtained here: https://map.what3words.com/register?dev=true
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         api_key => "zxse345s"
+  #       }
+  #     }
   config :api_key, :validate => :string, :required => true
+
+  # Specify the language of the 3 word address and the returned data.
+  # A supported 3 word address language as an ISO 639-1 2 letter code.
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         lang => "en"
+  #       }
+  #     }
   config :lang, :validate => :string, :default => "en"
+
+  # Specify the format of the returned data.
+  # Can be one of json (the default), geojson or xml.
+  # Json and geojson are returned as objects, xml as a string.
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         format => "json"
+  #       }
+  #     }
   config :format, :validate => :string, :default => "json"
+
+  # Specify the display type of the returned data.
+  # Can be one of full (the default), terse (less output) or minimal (the bare minimum).
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         display => "full"
+  #       }
+  #     }
   config :display, :validate => :string, :default => "full"
+
+  # The field containing a 3 word address as a string or geo corrdinates.
+  # Geo corrdinates are a comma or space separated string of latitude and longitude
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         source => "message"
+  #       }
+  #     }
   config :source, :validate => :string, :default => "message"
+
+  # The name of the field where the returned data will be stored.
+  # Any current contents of that field will be overwritten.
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         target => "what3words"
+  #       }
+  #     }
   config :target, :validate => :string, :default => "what3words"
+
+  # Append values to the `tags` field when there has been an
+  # error looking up geodata.
+  #
+  # Example:
+  # [source,ruby]
+  #     filter {
+  #       what3words {
+  #         tag_on_failure => [ "_what3wordsfailure" ]
+  #       }
+  #     }
   config :tag_on_failure, :validate => :array, :default => ["_what3wordsfailure"]
 
   public
@@ -53,5 +132,5 @@ class LogStash::Filters::What3Words < LogStash::Filters::Base
     return obj.inject({}){|memo,(k,v)| memo[k.to_s] =  unsymbolize(v); memo} if obj.is_a? Hash
     return obj.inject([]){|memo,v    | memo           << unsymbolize(v); memo} if obj.is_a? Array
     return obj
-  end
+  end # def unsymbolize
 end # class LogStash::Filters::Example
